@@ -1,0 +1,83 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "created": "2025-01-27T00:00:00.000Z",
+    "updated": "2025-01-27T00:00:00.000Z", 
+    "description": "Merged tasks from all contexts",
+    "total_tasks": 50
+  },
+  "tasks": [
+    {
+      "id": "master-1",
+      "title": "Install TanStack Solid Table Dependency",
+      "description": "Add @tanstack/solid-table package to the project and ensure proper TypeScript configuration",
+      "details": "Install @tanstack/solid-table using npm/yarn/pnpm. Verify TypeScript configuration supports the package. Update package.json and lock file. Ensure no version conflicts with existing dependencies.",
+      "testStrategy": "Verify package installation by importing core functions in a test file. Check that TypeScript compilation passes without errors.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "pending",
+      "subtasks": [],
+      "context": "master"
+    },
+    {
+      "id": "master-2", 
+      "title": "Define CurrentEventRow Type and Data Mapping",
+      "description": "Create TypeScript type definition for table rows and implement mapping function from API response to table data",
+      "details": "Define CurrentEventRow type with fields: id, displayTitle, signs, dateRange, durationText, relativeEnd. Implement mapEventsToRows function that transforms api.timeline.getCurrentState.query() response into CurrentEventRow[]. Handle edge cases like missing signs, undefined start/end dates, and fallback ID generation.",
+      "testStrategy": "Unit test mapEventsToRows with various API response scenarios including empty arrays, missing properties, and edge cases. Verify type safety and proper fallback handling.",
+      "priority": "high",
+      "dependencies": ["master-1"],
+      "status": "pending", 
+      "subtasks": [],
+      "context": "master"
+    },
+    {
+      "id": "tanstack-11",
+      "title": "Install Dependencies and Setup Types",
+      "description": "Define TypeScript types for CurrentEventRow and table data structures using existing @tanstack/solid-table dependency",
+      "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Since @tanstack/solid-table is already present in package.json, proceed directly to defining types. Create CurrentEventRow type with fields: id (string), displayTitle (string), signs (string[]), dateRange ({ start?: string; end?: string }), durationText (string), relativeEnd (string). Create type-safe interfaces that match the API response structure from api.timeline.getCurrentState.query().",
+      "testStrategy": "Run TypeScript compiler to ensure types are properly defined without errors. Test type inference with sample data objects. Verify @tanstack/solid-table types are accessible and compatible.",
+      "subtasks": [],
+      "context": "tanstack-migration"
+    },
+    {
+      "id": "eclipse-11",
+      "title": "Verify Backend tRPC Endpoints",
+      "description": "Confirm that timeline.getEclipses and timeline.getAllEvents endpoints return AstroEventPage[] with proper dateRange parsing and isActive flags",
+      "details": "Verify endpoints in src/server/routers/timeline.ts: timeline.getEclipses returns eclipse-tagged events as AstroEventPage[], timeline.getAllEvents returns all events for broader context. Ensure dateRange is properly parsed with start/end dates, confirm isActive boolean is set by the parser, test API access via api.timeline.* from src/lib/api.ts, validate AstroEventPage shape from @keithce/astro-notion-db package.",
+      "testStrategy": "Unit tests for tRPC endpoints, verify response structure matches AstroEventPage interface, test with sample eclipse data",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "subtasks": [],
+      "context": "eclipse-tab"
+    },
+    {
+      "id": "prefs-1",
+      "title": "Create shared types for preferences system", 
+      "description": "Define TypeScript types for notification preferences, theme settings, and data structures used across the application",
+      "details": "Create src/features/preferences/types.ts with: NotificationFrequency type: 'daily' | 'weekly' | 'monthly' | 'never', NotificationTimePreference type: 'morning' | 'afternoon' | 'evening' | 'anytime', NotificationFilters interface with lunar, eclipse, planets, bigEvents booleans, Theme type: 'light' | 'dark', Preferences interface with userId, all notification settings, theme, timestamps, Export all types for use in components and Convex functions",
+      "testStrategy": "Verify types compile correctly, can be imported in other files, and match the schema requirements exactly",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "subtasks": [],
+      "context": "user-preferences"
+    },
+    {
+      "id": "resend-1",
+      "title": "Setup Database Schema and Email Sends Table",
+      "description": "Add the email_sends table to Convex schema with proper indexing for idempotency tracking",
+      "details": "Update convex/schema.ts to add email_sends table with fields: id (string), userId (string), email (string), frequency ('daily'|'weekly'|'monthly'|'alert'), periodKey (string), checksum (string), status ('queued'|'sent'|'failed'), attempts (number), error (optional string), createdAt (number), updatedAt (number). Create unique composite index on (userId, frequency, periodKey) for idempotency checks.",
+      "testStrategy": "Verify table creation in Convex dashboard, test inserting sample records, validate unique constraint works by attempting duplicate inserts, query by composite index to ensure performance",
+      "priority": "high", 
+      "dependencies": [],
+      "status": "done",
+      "subtasks": [],
+      "context": "convex-resend"
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+/**
+ * Task Parser for handling both single-context and multi-context tasks.json files
+ */
+
+import { TasksData, Task } from '@/types/task';
+import { v4 as uuidv4 } from 'uuid';
+
+export class TaskParser {
+  static parse(content: string): TasksData {
+    try {
+      const data = JSON.parse(content);
+      
+      // Check if it's single-context format (has direct tasks array)
+      if (data.tasks && Array.isArray(data.tasks)) {
+        return this.validateAndNormalize(data);
+      }
+      
+      // Check if it's multi-context format
+      const contexts = this.getAvailableContexts(content);
+      if (contexts.length > 0) {
+        // Merge all contexts
+        return this.mergeAllContexts(data);
+      }
+      
+      throw new Error('No valid tasks found in file');
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error(`Invalid JSON syntax: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  static getAvailableContexts(content: string): string[] {
+    try {
+      const data = JSON.parse(content);
+      
+      // Single-context format
+      if (data.tasks && Array.isArray(data.tasks)) {
+        return ['default'];
+      }
+      
+      // Multi-context format
+      const contexts: string[] = [];
+      for (const [key, value] of Object.entries(data)) {
+        if (this.isValidContext(value)) {
+          contexts.push(key);
+        }
+      }
+      
+      return contexts;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  static parseSpecificContext(content: string, contextName: string): TasksData {
+    try {
+      const data = JSON.parse(content);
+      
+      // Handle default context for single-context format
+      if (contextName === 'default' && data.tasks && Array.isArray(data.tasks)) {
+        return this.validateAndNormalize(data);
+      }
+      
+      // Handle specific context for multi-context format
+      if (data[contextName] && this.isValidContext(data[contextName])) {
+        const contextData = data[contextName];
+        const tasksData: TasksData = {
+          version: '1.0.0',
+          metadata: {
+            created_at: contextData.metadata?.created || contextData.metadata?.created_at || new Date().toISOString(),
+            updated_at: contextData.metadata?.updated || contextData.metadata?.updated_at || new Date().toISOString(),
+            total_tasks: contextData.tasks.length,
+            description: contextData.metadata?.description || `Tasks from ${contextName} context`
+          },
+          tasks: contextData.tasks.map((task: any) => this.normalizeTask(task, contextName))
+        };
+        
+        return this.validateAndNormalize(tasksData);
+      }
+      
+      throw new Error(`Context "${contextName}" not found`);
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error(`Invalid JSON syntax: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  private static isValidContext(value: any): boolean {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      Array.isArray(value.tasks) &&
+      value.tasks.length >= 0
+    );
+  }
+
+  private static mergeAllContexts(data: any): TasksData {
+    const allTasks: Task[] = [];
+    let totalTasks = 0;
+    const contexts: string[] = [];
+    
+    for (const [contextName, contextData] of Object.entries(data)) {
+      if (this.isValidContext(contextData)) {
+        contexts.push(contextName);
+        const contextTasks = (contextData as any).tasks.map((task: any) => 
+          this.normalizeTask(task, contextName)
+        );
+        allTasks.push(...contextTasks);
+        totalTasks += contextTasks.length;
+      }
+    }
+
+    const tasksData: TasksData = {
+      version: '1.0.0',
+      metadata: {
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        total_tasks: totalTasks,
+        description: `Merged tasks from contexts: ${contexts.join(', ')}`
+      },
+      tasks: allTasks
+    };
+
+    return this.validateAndNormalize(tasksData);
+  }
+
+  private static normalizeTask(task: any, context?: string): Task {
+    // Generate ID if missing
+    const id = task.id ? String(task.id) : uuidv4();
+    
+    // Normalize status
+    const statusMap: Record<string, string> = {
+      'pending': 'todo',
+      'done': 'completed',
+      'in-progress': 'in_progress',
+      'in_progress': 'in_progress'
+    };
+    const status = statusMap[task.status] || task.status || 'todo';
+    
+    // Normalize priority
+    const priorityMap: Record<string, string> = {
+      'critical': 'urgent',
+      'normal': 'medium'
+    };
+    const priority = priorityMap[task.priority] || task.priority || 'medium';
+    
+    // Add context as a tag if provided
+    const tags = Array.isArray(task.tags) ? [...task.tags] : [];
+    if (context && context !== 'default') {
+      tags.unshift(`context:${context}`);
+    }
+
+    const normalizedTask: Task = {
+      id,
+      title: task.title || 'Untitled Task',
+      description: task.description || '',
+      status: status as Task['status'],
+      priority: priority as Task['priority'],
+      created_at: task.created_at || task.createdAt || new Date().toISOString(),
+      updated_at: task.updated_at || task.updatedAt || new Date().toISOString(),
+      tags,
+      subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((subtask: any) => 
+        this.normalizeTask(subtask, context)
+      ) : [],
+      parent_id: task.parent_id || task.parentId || task.parentTaskId,
+      assignee: task.assignee,
+      estimated_hours: typeof task.estimated_hours === 'number' ? task.estimated_hours : 
+                      typeof task.estimatedHours === 'number' ? task.estimatedHours : undefined,
+      actual_hours: typeof task.actual_hours === 'number' ? task.actual_hours :
+                   typeof task.actualHours === 'number' ? task.actualHours : undefined,
+      completion_percentage: typeof task.completion_percentage === 'number' ? task.completion_percentage :
+                            typeof task.completionPercentage === 'number' ? task.completionPercentage : 0,
+      due_date: task.due_date || task.dueDate
+    };
+
+    return normalizedTask;
+  }
+
+  private static validateAndNormalize(data: TasksData): TasksData {
+    if (!data.tasks || !Array.isArray(data.tasks)) {
+      throw new Error('Invalid format: tasks must be an array');
+    }
+
+    // Normalize metadata
+    const metadata = {
+      created_at: data.metadata?.created_at || new Date().toISOString(),
+      updated_at: data.metadata?.updated_at || new Date().toISOString(),
+      total_tasks: data.tasks.length,
+      description: data.metadata?.description || 'Task list'
+    };
+
+    return {
+      version: data.version || '1.0.0',
+      metadata,
+      tasks: data.tasks
+    };
+  }
+}
+
+// Export convenience functions for backward compatibility
+export function parseTasksFile(content: string): TasksData {
+  return TaskParser.parse(content);
+}
+
+export function getAvailableContexts(content: string): string[] {
+  return TaskParser.getAvailableContexts(content);
+}
+
+export function parseSpecificContext(content: string, contextName: string): TasksData {
+  return TaskParser.parseSpecificContext(content, contextName);
+}

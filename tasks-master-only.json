@@ -1,0 +1,121 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "created": "2025-08-06T21:37:44.741Z",
+    "updated": "2025-08-06T21:37:44.741Z",
+    "description": "Tasks for master context",
+    "total_tasks": 10
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Install TanStack Solid Table Dependency",
+      "description": "Add @tanstack/solid-table package to the project and ensure proper TypeScript configuration",
+      "details": "Install @tanstack/solid-table using npm/yarn/pnpm. Verify TypeScript configuration supports the package. Update package.json and lock file. Ensure no version conflicts with existing dependencies.",
+      "testStrategy": "Verify package installation by importing core functions in a test file. Check that TypeScript compilation passes without errors.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 2,
+      "title": "Define CurrentEventRow Type and Data Mapping",
+      "description": "Create TypeScript type definition for table rows and implement mapping function from API response to table data",
+      "details": "Define CurrentEventRow type with fields: id, displayTitle, signs, dateRange, durationText, relativeEnd. Implement mapEventsToRows function that transforms api.timeline.getCurrentState.query() response into CurrentEventRow[]. Handle edge cases like missing signs, undefined start/end dates, and fallback ID generation.",
+      "testStrategy": "Unit test mapEventsToRows with various API response scenarios including empty arrays, missing properties, and edge cases. Verify type safety and proper fallback handling.",
+      "priority": "high",
+      "dependencies": [1],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 3,
+      "title": "Create Column Definitions with Custom Sorting",
+      "description": "Implement TanStack table column definitions for all 5 columns with appropriate sorting functions",
+      "details": "Use createColumnHelper<CurrentEventRow>() to define columns: Event (accessorKey: displayTitle, alphanumeric sort), Zodiac Sign (accessorFn for first sign, alphanumeric sort), Timeframe (accessorFn for start date, datetime sort), Time Remaining (custom comparator using end date), Learn More (display column, no sorting). Implement custom sorting functions with sortUndefined='last' for missing dates.",
+      "testStrategy": "Test each column's sorting behavior with mock data including undefined values. Verify custom Time Remaining comparator correctly handles missing end dates and falls back to text comparison.",
+      "priority": "high",
+      "dependencies": [2],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 4,
+      "title": "Implement Cell Renderers with Existing UI Components",
+      "description": "Create cell rendering functions that preserve existing UI components and styling",
+      "details": "Implement cell renderers for each column: Event cell uses TruncatedText component, Zodiac cell renders badges for all signs with getZodiacEmoji, Timeframe cell displays 'start - end (durationText)' format, Time Remaining shows relativeEnd text, Learn More renders disabled button. Maintain all existing Tailwind classes and component behavior.",
+      "testStrategy": "Visual testing to ensure rendered cells match existing table appearance. Test with various data scenarios including multiple zodiac signs, missing dates, and long text content.",
+      "priority": "medium",
+      "dependencies": [3],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 5,
+      "title": "Initialize TanStack Table Instance with Core Features",
+      "description": "Set up createSolidTable instance with data, columns, and required row models",
+      "details": "Create table instance using createSolidTable with: columns from step 3, reactive data getter, getCoreRowModel(), getSortedRowModel(). Set initialState with sorting on Timeframe column (desc: false). Ensure proper memoization of derivedRows to avoid unnecessary re-renders.",
+      "testStrategy": "Verify table instance creation without errors. Test that initial sorting is applied correctly. Confirm reactive data updates when query data changes.",
+      "priority": "high",
+      "dependencies": [4],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 6,
+      "title": "Replace Manual Table Markup with TanStack Rendering",
+      "description": "Replace existing manual <table> JSX with TanStack table rendering using headerGroups and flexRender",
+      "details": "Remove manual table markup from CurrentStateView.tsx. Implement rendering using table.getHeaderGroups() for headers and table.getRowModel().rows for body. Use flexRender for both header and cell rendering. Preserve all existing Tailwind classes: table styling, th/td classes, hover effects, and responsive behavior.",
+      "testStrategy": "Visual comparison between old and new table rendering. Verify all Tailwind classes are preserved and styling matches exactly. Test responsive behavior and hover states.",
+      "priority": "high",
+      "dependencies": [5],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 7,
+      "title": "Preserve Loading, Error, and Empty States",
+      "description": "Ensure existing Show blocks for loading, error, and empty states continue to work with new table implementation",
+      "details": "Maintain current Show component logic for LoadingSpinner, error states, and empty data scenarios. Ensure TanStack table only renders when data is available and valid. Preserve all existing conditional rendering logic and user feedback mechanisms.",
+      "testStrategy": "Test all state scenarios: loading state shows spinner, error state shows error message, empty data shows appropriate message, successful data load shows table. Verify smooth transitions between states.",
+      "priority": "medium",
+      "dependencies": [6],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 8,
+      "title": "Implement Interactive Sorting Functionality",
+      "description": "Enable click-to-sort functionality on sortable column headers with visual indicators",
+      "details": "Add click handlers to sortable column headers (Event, Zodiac Sign, Timeframe, Time Remaining). Implement visual sorting indicators (arrows/icons) to show current sort direction. Ensure Learn More column remains non-sortable. Handle multi-column sorting if needed and provide clear user feedback for sorting state changes.",
+      "testStrategy": "Test sorting functionality on each sortable column. Verify sort direction indicators update correctly. Test sorting with various data types including edge cases like undefined values. Confirm Learn More column is not sortable.",
+      "priority": "medium",
+      "dependencies": [7],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 9,
+      "title": "Add Pagination Scaffolding (Disabled by Default)",
+      "description": "Wire up pagination infrastructure without enabling UI, preparing for future enhancement",
+      "details": "Add getPaginationRowModel() to table configuration. Set up pagination state with default pageSize of 10. Create pagination UI components but keep them commented out or conditionally hidden. Ensure table works correctly with pagination model even when UI is disabled. Document how to enable pagination in the future.",
+      "testStrategy": "Verify table functions correctly with pagination model added. Test that pagination state exists but doesn't affect current UI. Ensure performance remains optimal with pagination infrastructure in place.",
+      "priority": "low",
+      "dependencies": [8],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 10,
+      "title": "Testing, Documentation, and Final Integration",
+      "description": "Complete testing suite, update documentation, and perform final integration verification",
+      "details": "Add comprehensive unit tests for mapping functions and sort comparators. Update component documentation and add code comments for future maintainers. Verify TypeScript compilation, linting, and all tests pass. Perform final visual and functional testing to ensure no regressions. Update README with TanStack Table integration notes.",
+      "testStrategy": "Run full test suite including unit tests, integration tests, and manual testing. Verify no TypeScript errors, linting issues, or runtime errors. Perform accessibility testing to ensure table semantics are preserved. Test with various data scenarios and edge cases.",
+      "priority": "medium",
+      "dependencies": [9],
+      "status": "pending",
+      "subtasks": []
+    }
+  ]
+}
