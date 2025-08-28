@@ -16,8 +16,13 @@ export interface Task {
   completion_percentage: number;
 }
 
-export type TaskStatus = 'todo' | 'in_progress' | 'completed' | 'blocked' | 'cancelled';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskStatus =
+  | "todo"
+  | "in_progress"
+  | "completed"
+  | "blocked"
+  | "cancelled";
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
 
 export interface TaskFilter {
   status?: TaskStatus[];
@@ -33,6 +38,7 @@ export interface TasksData {
     created_at: string;
     updated_at: string;
     total_tasks: number;
+    description?: string;
   };
   tasks: Task[];
 }

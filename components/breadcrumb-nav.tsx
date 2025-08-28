@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useTaskStore } from '@/store/task-store';
+import React from "react";
+import { useTaskStore } from "@/store/task-store";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,8 +9,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Home } from 'lucide-react';
+} from "@/components/ui/breadcrumb";
+import { Home } from "lucide-react";
 
 export const BreadcrumbNav: React.FC = () => {
   const { selectedTask, findTaskById, setSelectedTask } = useTaskStore();
@@ -20,16 +20,21 @@ export const BreadcrumbNav: React.FC = () => {
 
     const path = [];
     let currentTask = selectedTask;
-    
+
     while (currentTask) {
       path.unshift(currentTask);
       if (currentTask.parent_id) {
-        currentTask = findTaskById(currentTask.parent_id);
+        const parentTask = findTaskById(currentTask.parent_id);
+        if (parentTask) {
+          currentTask = parentTask;
+        } else {
+          break;
+        }
       } else {
         break;
       }
     }
-    
+
     return path;
   };
 
@@ -54,7 +59,7 @@ export const BreadcrumbNav: React.FC = () => {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink 
+          <BreadcrumbLink
             onClick={() => setSelectedTask(null)}
             className="flex items-center space-x-2 cursor-pointer"
           >
@@ -62,7 +67,7 @@ export const BreadcrumbNav: React.FC = () => {
             <span>Tasks</span>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        
+
         {breadcrumbPath.map((task, index) => (
           <React.Fragment key={task.id}>
             <BreadcrumbSeparator />
@@ -70,7 +75,7 @@ export const BreadcrumbNav: React.FC = () => {
               {index === breadcrumbPath.length - 1 ? (
                 <BreadcrumbPage>{task.title}</BreadcrumbPage>
               ) : (
-                <BreadcrumbLink 
+                <BreadcrumbLink
                   onClick={() => setSelectedTask(task)}
                   className="cursor-pointer"
                 >
