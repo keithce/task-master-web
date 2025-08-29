@@ -68,7 +68,7 @@ export default function TaskMasterApp() {
                   <div className="mt-4 h-[calc(100%-4rem)]">
                     <TabsContent value="tasks" className="h-full space-y-4">
                       <TaskFilters />
-                      <ScrollArea className="h-[calc(100%-12rem)]">
+                      <ScrollArea className="h-[calc(100%-12rem)] px-1">
                         <TaskTree />
                       </ScrollArea>
                     </TabsContent>

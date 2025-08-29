@@ -256,7 +256,7 @@ export const TaskTree: React.FC = () => {
 
   const taskTree = buildTaskTree(uniqueTasks);
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-1">
       {taskTree.map((task) => (
         <TaskNode key={task.id} task={task} level={0} />
       ))}
