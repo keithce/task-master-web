@@ -37,6 +37,7 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level, parentId }) => {
     toggleTaskExpansion,
     createTask,
     deleteTask,
+    findTaskById,
   } = useTaskStore();
 
   const isExpanded = expandedTasks.has(task.id);
