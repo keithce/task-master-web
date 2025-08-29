@@ -26,9 +26,10 @@ import React from "react";
 interface TaskNodeProps {
   task: Task;
   level: number;
+  parentId?: string;
 }
 
-const TaskNode: React.FC<TaskNodeProps> = ({ task, level }) => {
+const TaskNode: React.FC<TaskNodeProps> = ({ task, level, parentId }) => {
   const {
     selectedTask,
     setSelectedTask,
@@ -41,6 +42,9 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level }) => {
   const isExpanded = expandedTasks.has(task.id);
   const isSelected = selectedTask?.id === task.id;
   const hasSubtasks = task.subtasks.length > 0;
+
+  // Format the ID display
+  const displayId = parentId ? `${parentId}.${task.id}` : task.id;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -103,6 +107,9 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level }) => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-2">
+                <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
+                  #{displayId}
+                </span>
                 <h3 className="font-semibold text-sm truncate flex-1 min-w-0">{task.title}</h3>
                 <div
                   className={`w-2 h-2 rounded-full flex-shrink-0 ${getPriorityColor(task.priority)}`}
@@ -181,8 +188,14 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level }) => {
 
       {hasSubtasks && isExpanded && (
         <div className="space-y-2">
-          {task.subtasks.map((subtask) => (
-            <TaskNode key={subtask.id} task={subtask} level={level + 1} />
+          {task.subtasks
+            .sort((a, b) => {
+              const aNum = parseInt(a.id) || 0;
+              const bNum = parseInt(b.id) || 0;
+              return aNum - bNum;
+            })
+            .map((subtask) => (
+            <TaskNode key={subtask.id} task={subtask} level={level + 1} parentId={task.id} />
           ))}
         </div>
       )}
@@ -215,6 +228,15 @@ export const TaskTree: React.FC = () => {
     );
   }
 
+  // Helper function to sort tasks numerically by ID
+  const sortTasksById = (tasks: Task[]): Task[] => {
+    return tasks.sort((a, b) => {
+      const aNum = parseInt(a.id) || 0;
+      const bNum = parseInt(b.id) || 0;
+      return aNum - bNum;
+    });
+  };
+
   // Build task tree from filtered tasks
   const buildTaskTree = (tasks: Task[]): Task[] => {
     const taskMap = new Map<string, Task>();
@@ -237,7 +259,18 @@ export const TaskTree: React.FC = () => {
       }
     });
 
-    return rootTasks;
+    // Sort root tasks and subtasks recursively
+    const sortTasksRecursively = (tasks: Task[]): Task[] => {
+      const sorted = sortTasksById(tasks);
+      sorted.forEach(task => {
+        if (task.subtasks.length > 0) {
+          task.subtasks = sortTasksRecursively(task.subtasks);
+        }
+      });
+      return sorted;
+    };
+
+    return sortTasksRecursively(rootTasks);
   };
 
   // Deduplicate tasks by ID to prevent React key conflicts
@@ -257,7 +290,7 @@ export const TaskTree: React.FC = () => {
   const taskTree = buildTaskTree(uniqueTasks);
   return (
     <div className="space-y-4 px-1">
-      {taskTree.map((task) => (
+      {sortTasksById(taskTree).map((task) => (
         <TaskNode key={task.id} task={task} level={0} />
       ))}
 
