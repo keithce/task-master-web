@@ -103,9 +103,9 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level }) => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-2">
-                <h3 className="font-semibold text-sm truncate">{task.title}</h3>
+                <h3 className="font-semibold text-sm truncate flex-1 min-w-0">{task.title}</h3>
                 <div
-                  className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`}
+                  className={`w-2 h-2 rounded-full flex-shrink-0 ${getPriorityColor(task.priority)}`}
                 />
               </div>
 
