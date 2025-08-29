@@ -251,22 +251,23 @@ export const FileManager: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Button 
               onClick={downloadTasksFile} 
               disabled={!tasksData || tasksData.tasks.length === 0}
               variant="outline"
+              className="text-sm"
             >
               <Download className="h-4 w-4 mr-2" />
               Export Tasks
             </Button>
             
-            <Button onClick={createSampleData} variant="outline">
+            <Button onClick={createSampleData} variant="outline" className="text-sm">
               <FileText className="h-4 w-4 mr-2" />
-              Load Sample Data
+              Sample Data
             </Button>
             
-            <Button onClick={handleManualSave} variant="outline">
+            <Button onClick={handleManualSave} variant="outline" className="text-sm">
               <Database className="h-4 w-4 mr-2" />
               Save State
             </Button>
@@ -275,9 +276,10 @@ export const FileManager: React.FC = () => {
               onClick={handleClearAll} 
               variant="outline"
               disabled={isClearing}
+              className="text-sm"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {isClearing ? 'Clearing...' : 'Clear All Data'}
+              {isClearing ? 'Clearing...' : 'Clear All'}
             </Button>
           </div>
 
