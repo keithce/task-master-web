@@ -127,16 +127,31 @@ export const TaskEditor: React.FC = () => {
   // Get all available task IDs for dependency selection
   const allTasks = getAllTasks();
   
-  // Deduplicate tasks by ID and exclude self
-  const uniqueTasks = allTasks.reduce((acc: Task[], task: Task) => {
-    const existingTask = acc.find((t) => t.id === task.id);
-    if (!existingTask && task.id !== selectedTask?.id) {
-      acc.push(task);
+  // Filter tasks that share at least one tag with the selected task
+  const tasksWithSharedTags = React.useMemo(() => {
+    if (!selectedTask || !selectedTask.tags || selectedTask.tags.length === 0) {
+      return []; // No tags means no shared dependencies
     }
-    return acc;
-  }, []);
+    
+    const selectedTags = selectedTask.tags;
+    
+    // Deduplicate and filter tasks by shared tags, exclude self
+    const uniqueTasks = allTasks.reduce((acc: Task[], task: Task) => {
+      const existingTask = acc.find((t) => t.id === task.id);
+      if (!existingTask && task.id !== selectedTask.id && task.tags) {
+        // Check if task shares at least one tag with selected task
+        const hasSharedTag = task.tags.some(tag => selectedTags.includes(tag));
+        if (hasSharedTag) {
+          acc.push(task);
+        }
+      }
+      return acc;
+    }, []);
+    
+    return uniqueTasks;
+  }, [allTasks, selectedTask]);
   
-  const availableTaskIds = uniqueTasks
+  const availableTaskIds = tasksWithSharedTags
     .map(task => task.id)
     .sort((a, b) => {
       const aNum = parseInt(a) || 0;
@@ -341,9 +356,19 @@ export const TaskEditor: React.FC = () => {
                   <SelectContent>
                     {availableTaskIds.map((taskId) => (
                       <SelectItem key={taskId} value={taskId}>
-                        #{taskId}
+                        <div className="flex items-center space-x-2">
+                          <span>#{taskId}</span>
+                          <span className="text-muted-foreground">
+                            {tasksWithSharedTags.find(t => t.id === taskId)?.title}
+                          </span>
+                        </div>
                       </SelectItem>
                     ))}
+                    {availableTaskIds.length === 0 && (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                        No tasks with shared tags found
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
                 <Button 
