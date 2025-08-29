@@ -23,9 +23,9 @@ import { Settings, BarChart3, FolderOpen } from 'lucide-react';
 export default function TaskMasterApp() {
   return (
     <PersistenceProvider>
-      <div className="h-screen flex flex-col bg-background">
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
-        <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="flex-shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -44,13 +44,13 @@ export default function TaskMasterApp() {
         </header>
 
         {/* Main Content */}
-        <div className="flex-1 container mx-auto p-4">
-          <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
+        <div className="flex-1 container mx-auto p-4 min-h-0">
+          <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border overflow-hidden">
             {/* Left Sidebar */}
             <ResizablePanel defaultSize={30} minSize={25}>
-              <div className="h-full p-4 flex flex-col">
+              <div className="h-full p-4 flex flex-col overflow-hidden">
                 <Tabs defaultValue="tasks" className="h-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="flex-shrink-0 grid w-full grid-cols-3">
                     <TabsTrigger value="tasks">
                       <FolderOpen className="h-4 w-4 mr-2" />
                       Tasks
@@ -65,21 +65,25 @@ export default function TaskMasterApp() {
                     </TabsTrigger>
                   </TabsList>
                   
-                  <div className="mt-4 flex-1 min-h-0">
+                  <div className="mt-4 flex-1 min-h-0 overflow-hidden">
                     <TabsContent value="tasks" className="h-full space-y-4 flex flex-col">
-                      <TaskFilters />
-                      <ScrollArea className="flex-1 min-h-0 px-1">
+                      <div className="flex-shrink-0">
+                        <TaskFilters />
+                      </div>
+                      <ScrollArea className="flex-1 min-h-0">
+                        <div className="px-1">
                         <TaskTree />
+                        </div>
                       </ScrollArea>
                     </TabsContent>
                     
-                    <TabsContent value="stats" className="h-full overflow-hidden">
+                    <TabsContent value="stats" className="h-full">
                       <ScrollArea className="h-full">
                         <TaskStats />
                       </ScrollArea>
                     </TabsContent>
                     
-                    <TabsContent value="files" className="h-full overflow-hidden">
+                    <TabsContent value="files" className="h-full">
                       <ScrollArea className="h-full">
                         <FileManager />
                       </ScrollArea>
@@ -93,7 +97,7 @@ export default function TaskMasterApp() {
 
             {/* Main Content Area */}
             <ResizablePanel defaultSize={70}>
-              <div className="h-full p-4">
+              <div className="h-full p-4 overflow-hidden">
                 <ScrollArea className="h-full">
                   <TaskEditor />
                 </ScrollArea>
