@@ -45,7 +45,7 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 export const TaskEditor: React.FC = () => {
-  const { selectedTask, updateTask, setSelectedTask, createTask, deleteTask } = useTaskStore();
+  const { selectedTask, updateTask, setSelectedTask, createTask, deleteTask, findTaskById } = useTaskStore();
   const [newTag, setNewTag] = React.useState("");
 
   const form = useForm<TaskFormData>({
@@ -105,6 +105,26 @@ export const TaskEditor: React.FC = () => {
     );
   };
 
+  const getFullTaskId = (task: any): string => {
+    if (!task) return "";
+    
+    const buildIdPath = (currentTask: any): string[] => {
+      const path = [currentTask.id];
+      
+      if (currentTask.parent_id) {
+        const parent = findTaskById(currentTask.parent_id);
+        if (parent) {
+          path.unshift(...buildIdPath(parent));
+        }
+      }
+      
+      return path;
+    };
+    
+    const idPath = buildIdPath(task);
+    return idPath.join('.');
+  };
+
   if (!selectedTask) {
     return (
       <Card className="h-full">
@@ -118,7 +138,12 @@ export const TaskEditor: React.FC = () => {
   return (
     <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Edit Task</CardTitle>
+        <CardTitle>
+          Edit Task
+          <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-1 rounded ml-3">
+            #{getFullTaskId(selectedTask)}
+          </span>
+        </CardTitle>
         <Button variant="ghost" size="sm" onClick={() => setSelectedTask(null)}>
           <X className="h-4 w-4" />
         </Button>
