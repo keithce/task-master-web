@@ -204,7 +204,7 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level, parentId }) => {
 };
 
 export const TaskTree: React.FC = () => {
-  const { tasksData, createTask, getFilteredTasks } = useTaskStore();
+  const { tasksData, createTask, getFilteredTasks, getAllTasksFlattened } = useTaskStore();
 
   const filteredTasks = getFilteredTasks();
 
@@ -273,24 +273,12 @@ export const TaskTree: React.FC = () => {
     return sortTasksRecursively(rootTasks);
   };
 
-  // Deduplicate tasks by ID to prevent React key conflicts
-  const uniqueTasks = filteredTasks.reduce((acc: Task[], task: Task) => {
-    const existingTask = acc.find((t) => t.id === task.id);
-    if (!existingTask) {
-      acc.push(task);
-    } else {
-      // Log warning about duplicate but keep the first occurrence
-      console.warn(
-        `Duplicate task ID found: ${task.id}. Keeping first occurrence.`,
-      );
-    }
-    return acc;
-  }, []);
 
-  const taskTree = buildTaskTree(uniqueTasks);
+  // For the tree view, we want to display the hierarchical structure as-is
+  // No need to rebuild the tree since the parser already created the hierarchy
   return (
     <div className="space-y-4 px-1">
-      {sortTasksById(taskTree).map((task) => (
+      {sortTasksById(filteredTasks).map((task) => (
         <TaskNode key={task.id} task={task} level={0} />
       ))}
 

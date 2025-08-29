@@ -125,7 +125,7 @@ export const TaskEditor: React.FC = () => {
   };
 
   // Get all available task IDs for dependency selection
-  const allTasks = getAllTasks();
+  const allTasks = getAllTasksFlattened();
   
   // Filter tasks that share at least one tag with the selected task
   const tasksWithSharedTags = React.useMemo(() => {

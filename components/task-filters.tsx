@@ -15,13 +15,13 @@ import {
 import { Search, Filter, X, Tag } from 'lucide-react';
 
 export const TaskFilters: React.FC = () => {
-  const { filter, setFilter, getAllTasks } = useTaskStore();
+  const { filter, setFilter, getAllTasksFlattened } = useTaskStore();
 
   const statusOptions: TaskStatus[] = ['todo', 'in_progress', 'completed', 'blocked', 'cancelled'];
   const priorityOptions: TaskPriority[] = ['low', 'medium', 'high', 'urgent'];
 
   // Get all unique tags from all tasks
-  const allTasks = getAllTasks();
+  const allTasks = getAllTasksFlattened();
   const allTags = React.useMemo(() => {
     const tagSet = new Set<string>();
     allTasks.forEach(task => {

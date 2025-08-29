@@ -156,13 +156,16 @@ export class TaskParser {
 
     // Handle subtasks recursively - check various possible field names
     const rawSubtasks = task.subtasks || task.sub_tasks || task.children || [];
-    const subtasks = Array.isArray(rawSubtasks) ? rawSubtasks.map((subtask: any) => 
-      this.normalizeTask(subtask, context)
-    ) : [];
-
+    const subtasks = Array.isArray(rawSubtasks) ? rawSubtasks.map((subtask: any) => {
+      const normalizedSubtask = this.normalizeTask(subtask, context);
+      // Ensure parent_id is set correctly
+      normalizedSubtask.parent_id = id;
+      return normalizedSubtask;
+    }) : [];
 
     // Handle parent_id - check various field names
     const parentId = task.parent_id || task.parentId || task.parentTaskId || task.parent_task_id;
+    
     const normalizedTask: Task = {
       id,
       title: task.title || 'Untitled Task',

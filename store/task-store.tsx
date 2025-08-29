@@ -99,11 +99,23 @@ const useTaskStore = create<TaskState>()(
         const { tasksData } = get();
         if (!tasksData) return [];
 
+        // Return all tasks in hierarchical format, not flattened
+        // This preserves the parent-child relationships
+        return tasksData.tasks;
+      },
+
+      // Add helper to get truly flattened tasks when needed
+      getAllTasksFlattened: () => {
+        const { tasksData } = get();
+        if (!tasksData) return [];
+
         const flattenTasks = (tasks: Task[]): Task[] => {
           const result: Task[] = [];
           for (const task of tasks) {
             result.push(task);
-            result.push(...flattenTasks(task.subtasks));
+            if (task.subtasks && task.subtasks.length > 0) {
+              result.push(...flattenTasks(task.subtasks));
+            }
           }
           return result;
         };

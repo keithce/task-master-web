@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 
 export const TaskStats: React.FC = () => {
-  const { getAllTasks, getFilteredTasks, filter } = useTaskStore();
-  const allTasks = getAllTasks();
+  const { getAllTasksFlattened, getFilteredTasks, filter } = useTaskStore();
+  const allTasks = getAllTasksFlattened();
   const filteredTasks = getFilteredTasks();
   
   // Check if filters are active
