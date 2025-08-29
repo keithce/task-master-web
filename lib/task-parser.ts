@@ -151,7 +151,7 @@ export class TaskParser {
     // Add context as a tag if provided
     const tags = Array.isArray(task.tags) ? [...task.tags] : [];
     if (context && context !== 'default') {
-      tags.unshift(`context:${context}`);
+      tags.unshift(context);
     }
 
     const normalizedTask: Task = {

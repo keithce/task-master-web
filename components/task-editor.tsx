@@ -149,10 +149,21 @@ export const TaskEditor: React.FC = () => {
     <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>
-          Edit Task
-          <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-1 rounded ml-3">
-            #{getFullTaskId(selectedTask)}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span>Edit Task</span>
+            <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
+              #{getFullTaskId(selectedTask)}
+            </span>
+            {selectedTask.tags && selectedTask.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {selectedTask.tags.map((tag) => (
+                  <Badge key={tag} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
         </CardTitle>
         <Button variant="ghost" size="sm" onClick={() => setSelectedTask(null)}>
           <X className="h-4 w-4" />
