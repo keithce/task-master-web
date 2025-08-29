@@ -377,7 +377,17 @@ const useTaskStore = create<TaskState>()(
     }),
     {
       name: "task-store",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => {
+        // Ensure we're in the browser before accessing localStorage
+        if (typeof window === "undefined") {
+          return {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          };
+        }
+        return localStorage;
+      }),
       partialize: (state) => ({
         tasksData: state.tasksData,
         filter: state.filter,
@@ -392,6 +402,8 @@ const useTaskStore = create<TaskState>()(
           state.setIsHydrated(true);
         }
       },
+      // Skip hydration during SSR
+      skipHydration: typeof window === "undefined",
     },
   ),
 );
