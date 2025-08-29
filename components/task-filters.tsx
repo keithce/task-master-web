@@ -25,7 +25,7 @@ export const TaskFilters: React.FC = () => {
   const allTags = React.useMemo(() => {
     const tagSet = new Set<string>();
     allTasks.forEach(task => {
-      task.tags.forEach(tag => {
+      task.tags?.forEach(tag => {
         if (tag.trim()) tagSet.add(tag);
       });
     });
