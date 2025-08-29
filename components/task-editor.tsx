@@ -408,7 +408,7 @@ export const TaskEditor: React.FC = () => {
                       <div className="flex items-center space-x-3 flex-1 min-w-0">
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
-                          #{selectedTask.id}.{subtask.id}
+                          #{getFullTaskId(subtask)}
                         </span>
                         <span className="font-medium truncate flex-1 min-w-0">
                           {subtask.title}
