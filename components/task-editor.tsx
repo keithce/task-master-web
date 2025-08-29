@@ -126,8 +126,17 @@ export const TaskEditor: React.FC = () => {
 
   // Get all available task IDs for dependency selection
   const allTasks = getAllTasks();
-  const availableTaskIds = allTasks
-    .filter(task => task.id !== selectedTask?.id) // Exclude self
+  
+  // Deduplicate tasks by ID and exclude self
+  const uniqueTasks = allTasks.reduce((acc: Task[], task: Task) => {
+    const existingTask = acc.find((t) => t.id === task.id);
+    if (!existingTask && task.id !== selectedTask?.id) {
+      acc.push(task);
+    }
+    return acc;
+  }, []);
+  
+  const availableTaskIds = uniqueTasks
     .map(task => task.id)
     .sort((a, b) => {
       const aNum = parseInt(a) || 0;
