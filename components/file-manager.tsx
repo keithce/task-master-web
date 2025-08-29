@@ -119,7 +119,7 @@ export const FileManager: React.FC = () => {
       metadata: {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        total_tasks: 3,
+        total_tasks: 5,
       },
       tasks: [
         {
@@ -143,7 +143,8 @@ export const FileManager: React.FC = () => {
               tags: ['requirements'],
               subtasks: [],
               parent_id: '1',
-              completion_percentage: 100,
+              details: 'Create detailed requirements document with stakeholder input',
+              testStrategy: 'Review requirements with team for completeness'
             },
             {
               id: '1-2',
@@ -156,12 +157,13 @@ export const FileManager: React.FC = () => {
               tags: ['timeline'],
               subtasks: [],
               parent_id: '1',
-              completion_percentage: 0,
+              details: 'Use project management tools to create detailed timeline',
+              testStrategy: 'Validate timeline with stakeholders and team leads'
             },
           ],
-          assignee: 'John Doe',
-          estimated_hours: 20,
-          completion_percentage: 50,
+          details: 'Establish comprehensive project foundation with clear scope and timeline',
+          testStrategy: 'Conduct project kickoff meeting to validate planning phase',
+          dependencies: []
         },
         {
           id: '2',
@@ -173,8 +175,9 @@ export const FileManager: React.FC = () => {
           updated_at: new Date().toISOString(),
           tags: ['development', 'setup'],
           subtasks: [],
-          estimated_hours: 8,
-          completion_percentage: 0,
+          details: 'Configure development environment with necessary tools and dependencies',
+          testStrategy: 'Verify environment setup by running test build',
+          dependencies: ['1']
         },
         {
           id: '3',
@@ -186,9 +189,9 @@ export const FileManager: React.FC = () => {
           updated_at: new Date().toISOString(),
           tags: ['testing', 'framework'],
           subtasks: [],
-          assignee: 'Jane Smith',
-          estimated_hours: 15,
-          completion_percentage: 0,
+          details: 'Set up unit testing, integration testing, and end-to-end testing frameworks',
+          testStrategy: 'Create sample tests to validate framework functionality',
+          dependencies: ['2']
         },
       ],
     };

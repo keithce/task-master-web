@@ -148,11 +148,24 @@ export class TaskParser {
     };
     const priority = priorityMap[task.priority] || task.priority || 'medium';
     
-    // Add context as a tag if provided
-    const tags = Array.isArray(task.tags) ? [...task.tags] : [];
+    // Add context as a tag if provided and handle various tag formats
+    const tags = Array.isArray(task.tags) ? [...task.tags] : (task.tags ? [task.tags] : []);
     if (context && context !== 'default') {
       tags.unshift(context);
     }
+
+    // Handle subtasks recursively - check various possible field names
+    const rawSubtasks = task.subtasks || task.sub_tasks || task.children || [];
+    const subtasks = Array.isArray(rawSubtasks) ? rawSubtasks.map((subtask: any) => 
+      this.normalizeTask(subtask, context)
+    ) : [];
+
+    // Set parent_id for all subtasks
+    subtasks.forEach((subtask: Task) => {
+      if (!subtask.parent_id) {
+        subtask.parent_id = id;
+      }
+    });
 
     const normalizedTask: Task = {
       id,
@@ -162,9 +175,7 @@ export class TaskParser {
       priority: priority as Task['priority'],
       created_at: task.created_at || task.createdAt || new Date().toISOString(),
       updated_at: task.updated_at || task.updatedAt || new Date().toISOString(),
-      subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((subtask: any) => 
-        this.normalizeTask(subtask, context)
-      ) : [],
+      subtasks: subtasks,
       parent_id: task.parent_id || task.parentId || task.parentTaskId,
       dependencies: Array.isArray(task.dependencies) ? task.dependencies.map(String) : [],
       tags: tags,

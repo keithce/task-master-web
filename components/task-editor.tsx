@@ -478,7 +478,7 @@ export const TaskEditor: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+          {selectedTask && selectedTask.subtasks && selectedTask.subtasks.length > 0 && (
             )}
 
             {/* Add Subtask Button for tasks without subtasks */}
@@ -506,3 +506,5 @@ export const TaskEditor: React.FC = () => {
     </Card>
   );
 };
+          {/* Add Subtask Button for tasks without subtasks */}
+          {selectedTask && (!selectedTask.subtasks || selectedTask.subtasks.length === 0) && (
