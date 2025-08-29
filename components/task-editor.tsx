@@ -409,7 +409,7 @@ export const TaskEditor: React.FC = () => {
             </div>
 
             {/* Subtasks Section */}
-            {selectedTask && selectedTask.subtasks.length > 0 && (
+            {selectedTask && selectedTask.subtasks && selectedTask.subtasks.length > 0 && (
               <div className="space-y-4 pt-6 border-t">
                 <div className="flex items-center justify-between">
                   <Label className="text-base font-semibold">
@@ -424,6 +424,10 @@ export const TaskEditor: React.FC = () => {
                     <Plus className="h-4 w-4 mr-2" />
                     Add Subtask
                   </Button>
+                </div>
+                
+                <div className="text-xs text-muted-foreground">
+                  Click any subtask to edit it directly
                 </div>
                 
                 <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -444,9 +448,16 @@ export const TaskEditor: React.FC = () => {
                         <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
                           #{getFullTaskId(subtask)}
                         </span>
-                        <span className="font-medium truncate flex-1 min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">
                           {subtask.title}
-                        </span>
+                          </div>
+                          {subtask.description && (
+                            <div className="text-xs text-muted-foreground truncate">
+                              {subtask.description}
+                            </div>
+                          )}
+                        </div>
                         <Badge
                           variant="secondary"
                           className={
@@ -456,10 +467,12 @@ export const TaskEditor: React.FC = () => {
                               ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                               : subtask.status === "blocked"
                               ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                              : subtask.status === "done"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                               : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
                           }
                         >
-                          {subtask.status.replace("_", " ")}
+                          {subtask.status === "done" ? "completed" : subtask.status.replace("_", " ")}
                         </Badge>
                       </div>
                       
@@ -482,7 +495,7 @@ export const TaskEditor: React.FC = () => {
             )}
 
             {/* Add Subtask Button for tasks without subtasks */}
-            {selectedTask && selectedTask.subtasks.length === 0 && (
+            {selectedTask && (!selectedTask.subtasks || selectedTask.subtasks.length === 0) && (
               <div className="pt-6 border-t">
                 <Button
                   type="button"

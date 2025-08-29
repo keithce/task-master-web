@@ -160,13 +160,9 @@ export class TaskParser {
       this.normalizeTask(subtask, context)
     ) : [];
 
-    // Set parent_id for all subtasks
-    subtasks.forEach((subtask: Task) => {
-      if (!subtask.parent_id) {
-        subtask.parent_id = id;
-      }
-    });
 
+    // Handle parent_id - check various field names
+    const parentId = task.parent_id || task.parentId || task.parentTaskId || task.parent_task_id;
     const normalizedTask: Task = {
       id,
       title: task.title || 'Untitled Task',
@@ -176,7 +172,7 @@ export class TaskParser {
       created_at: task.created_at || task.createdAt || new Date().toISOString(),
       updated_at: task.updated_at || task.updatedAt || new Date().toISOString(),
       subtasks: subtasks,
-      parent_id: task.parent_id || task.parentId || task.parentTaskId,
+      parent_id: parentId ? String(parentId) : undefined,
       dependencies: Array.isArray(task.dependencies) ? task.dependencies.map(String) : [],
       tags: tags,
       details: task.details || '',
