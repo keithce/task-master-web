@@ -23,6 +23,7 @@ interface TaskState {
   // Task operations
   findTaskById: (id: string) => Task | null;
   getAllTasks: () => Task[];
+  getAllTasksFlattened: () => Task[];
   getFilteredTasks: () => Task[];
   createTask: (parentId?: string) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
