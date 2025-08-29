@@ -48,7 +48,7 @@ export default function TaskMasterApp() {
           <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
             {/* Left Sidebar */}
             <ResizablePanel defaultSize={30} minSize={25}>
-              <div className="h-full p-4">
+              <div className="h-full p-4 flex flex-col">
                 <Tabs defaultValue="tasks" className="h-full">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="tasks">
@@ -65,21 +65,21 @@ export default function TaskMasterApp() {
                     </TabsTrigger>
                   </TabsList>
                   
-                  <div className="mt-4 h-[calc(100%-4rem)]">
-                    <TabsContent value="tasks" className="h-full space-y-4">
+                  <div className="mt-4 flex-1 min-h-0">
+                    <TabsContent value="tasks" className="h-full space-y-4 flex flex-col">
                       <TaskFilters />
-                      <ScrollArea className="h-[calc(100%-12rem)] px-1">
+                      <ScrollArea className="flex-1 min-h-0 px-1">
                         <TaskTree />
                       </ScrollArea>
                     </TabsContent>
                     
-                    <TabsContent value="stats" className="h-full">
+                    <TabsContent value="stats" className="h-full overflow-hidden">
                       <ScrollArea className="h-full">
                         <TaskStats />
                       </ScrollArea>
                     </TabsContent>
                     
-                    <TabsContent value="files" className="h-full">
+                    <TabsContent value="files" className="h-full overflow-hidden">
                       <ScrollArea className="h-full">
                         <FileManager />
                       </ScrollArea>
