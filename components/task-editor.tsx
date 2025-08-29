@@ -42,7 +42,7 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 export const TaskEditor: React.FC = () => {
-  const { selectedTask, updateTask, setSelectedTask, createTask, deleteTask, findTaskById, getAllTasks } = useTaskStore();
+  const { selectedTask, updateTask, setSelectedTask, createTask, deleteTask, findTaskById, getAllTasks, getAllTasksFlattened } = useTaskStore();
   const [newDependency, setNewDependency] = React.useState("");
 
   const form = useForm<TaskFormData>({
