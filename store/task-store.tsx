@@ -128,61 +128,95 @@ const useTaskStore = create<TaskState>()(
         const { tasksData, filter } = get();
         if (!tasksData) return [];
 
-        const filterTasks = (tasks: Task[]): Task[] => {
-          return tasks.filter((task) => {
-            // Status filter
-            if (filter.status && filter.status.length > 0) {
-              if (!filter.status.includes(task.status)) return false;
-            }
+        // Helper function to check if a task matches the filter criteria
+        const matchesFilter = (task: Task): boolean => {
+          // Status filter
+          if (filter.status && filter.status.length > 0) {
+            if (!filter.status.includes(task.status)) return false;
+          }
 
-            // Priority filter
-            if (filter.priority && filter.priority.length > 0) {
-              if (!filter.priority.includes(task.priority)) return false;
-            }
+          // Priority filter
+          if (filter.priority && filter.priority.length > 0) {
+            if (!filter.priority.includes(task.priority)) return false;
+          }
 
-            // Search filter
-            if (filter.search && filter.search.trim()) {
-              const searchLower = filter.search.toLowerCase();
-              const matchesTitle = task.title
+          // Search filter
+          if (filter.search && filter.search.trim()) {
+            const searchLower = filter.search.toLowerCase();
+            const matchesTitle = task.title
+              .toLowerCase()
+              .includes(searchLower);
+            const matchesDescription = task.description
+              .toLowerCase()
+              .includes(searchLower);
+            const matchesTags = task.tags?.some((tag) =>
+              tag.toLowerCase().includes(searchLower),
+            );
+            if (!matchesTitle && !matchesDescription && !matchesTags)
+              return false;
+          }
+
+          // Assignee filter
+          if (filter.assignee && filter.assignee.trim()) {
+            if (
+              !task.assignee ||
+              !task.assignee
                 .toLowerCase()
-                .includes(searchLower);
-              const matchesDescription = task.description
-                .toLowerCase()
-                .includes(searchLower);
-              const matchesTags = task.tags.some((tag) =>
-                tag.toLowerCase().includes(searchLower),
-              );
-              if (!matchesTitle && !matchesDescription && !matchesTags)
-                return false;
+                .includes(filter.assignee.toLowerCase())
+            ) {
+              return false;
             }
+          }
 
-            // Assignee filter
-            if (filter.assignee && filter.assignee.trim()) {
-              if (
-                !task.assignee ||
-                !task.assignee
-                  .toLowerCase()
-                  .includes(filter.assignee.toLowerCase())
-              ) {
-                return false;
-              }
-            }
+          // Tags filter
+          if (filter.tags && filter.tags.length > 0) {
+            const hasMatchingTag = filter.tags.some((filterTag) =>
+              task.tags?.some((taskTag) =>
+                taskTag.toLowerCase().includes(filterTag.toLowerCase()),
+              ),
+            );
+            if (!hasMatchingTag) return false;
+          }
 
-            // Tags filter
-            if (filter.tags && filter.tags.length > 0) {
-              const hasMatchingTag = filter.tags.some((filterTag) =>
-                task.tags.some((taskTag) =>
-                  taskTag.toLowerCase().includes(filterTag.toLowerCase()),
-                ),
-              );
-              if (!hasMatchingTag) return false;
-            }
-
-            return true;
-          });
+          return true;
         };
 
-        return filterTasks(tasksData.tasks);
+        // Recursive function to filter tasks while preserving hierarchy
+        const filterTasksHierarchical = (tasks: Task[]): Task[] => {
+          const result: Task[] = [];
+
+          for (const task of tasks) {
+            const taskMatches = matchesFilter(task);
+            const filteredSubtasks = task.subtasks.length > 0 
+              ? filterTasksHierarchical(task.subtasks) 
+              : [];
+            const hasMatchingSubtasks = filteredSubtasks.length > 0;
+
+            // Include task if:
+            // 1. Task itself matches the filter, OR
+            // 2. Task has subtasks that match the filter
+            if (taskMatches || hasMatchingSubtasks) {
+              result.push({
+                ...task,
+                subtasks: filteredSubtasks, // Only include matching subtasks
+              });
+            }
+          }
+
+          return result;
+        };
+
+        // If no filters are active, return all tasks
+        const hasActiveFilters = Object.keys(filter).some(key => {
+          const value = filter[key as keyof typeof filter];
+          return value && (Array.isArray(value) ? value.length > 0 : true);
+        });
+
+        if (!hasActiveFilters) {
+          return tasksData.tasks;
+        }
+
+        return filterTasksHierarchical(tasksData.tasks);
       },
 
       createTask: (parentId) => {

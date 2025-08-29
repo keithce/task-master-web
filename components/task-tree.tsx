@@ -204,7 +204,7 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level, parentId }) => {
 };
 
 export const TaskTree: React.FC = () => {
-  const { tasksData, createTask, getFilteredTasks, getAllTasksFlattened } = useTaskStore();
+  const { tasksData, createTask, getFilteredTasks } = useTaskStore();
 
   const filteredTasks = getFilteredTasks();
 
@@ -228,57 +228,26 @@ export const TaskTree: React.FC = () => {
     );
   }
 
-  // Helper function to sort tasks numerically by ID
-  const sortTasksById = (tasks: Task[]): Task[] => {
-    return tasks.sort((a, b) => {
+  // Helper function to sort tasks numerically by ID recursively
+  const sortTasksRecursively = (tasks: Task[]): Task[] => {
+    const sorted = tasks.sort((a, b) => {
       const aNum = parseInt(a.id) || 0;
       const bNum = parseInt(b.id) || 0;
       return aNum - bNum;
     });
+    
+    return sorted.map(task => ({
+      ...task,
+      subtasks: task.subtasks.length > 0 ? sortTasksRecursively(task.subtasks) : []
+    }));
   };
 
-  // Build task tree from filtered tasks
-  const buildTaskTree = (tasks: Task[]): Task[] => {
-    const taskMap = new Map<string, Task>();
-    const rootTasks: Task[] = [];
-
-    // First, create a map of all tasks
-    tasks.forEach((task) => {
-      taskMap.set(task.id, { ...task, subtasks: [] });
-    });
-
-    // Then, build the tree structure
-    tasks.forEach((task) => {
-      const taskWithSubtasks = taskMap.get(task.id)!;
-
-      if (task.parent_id && taskMap.has(task.parent_id)) {
-        const parent = taskMap.get(task.parent_id)!;
-        parent.subtasks.push(taskWithSubtasks);
-      } else {
-        rootTasks.push(taskWithSubtasks);
-      }
-    });
-
-    // Sort root tasks and subtasks recursively
-    const sortTasksRecursively = (tasks: Task[]): Task[] => {
-      const sorted = sortTasksById(tasks);
-      sorted.forEach(task => {
-        if (task.subtasks.length > 0) {
-          task.subtasks = sortTasksRecursively(task.subtasks);
-        }
-      });
-      return sorted;
-    };
-
-    return sortTasksRecursively(rootTasks);
-  };
-
-
-  // For the tree view, we want to display the hierarchical structure as-is
-  // No need to rebuild the tree since the parser already created the hierarchy
+  // Sort filtered tasks while maintaining hierarchy
+  const sortedFilteredTasks = sortTasksRecursively(filteredTasks);
+  
   return (
     <div className="space-y-4 px-1">
-      {sortTasksById(filteredTasks).map((task) => (
+      {sortedFilteredTasks.map((task) => (
         <TaskNode key={task.id} task={task} level={0} />
       ))}
 
