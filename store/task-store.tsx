@@ -185,6 +185,7 @@ const useTaskStore = create<TaskState>()(
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           dependencies: [],
+          tags: [],
           subtasks: [],
           parent_id: parentId,
           details: "",

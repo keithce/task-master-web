@@ -9,6 +9,7 @@ export interface Task {
   subtasks: Task[];
   parent_id?: string;
   dependencies?: string[];
+  tags?: string[];
   details?: string;
   testStrategy?: string;
 }

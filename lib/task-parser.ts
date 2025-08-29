@@ -167,6 +167,7 @@ export class TaskParser {
       ) : [],
       parent_id: task.parent_id || task.parentId || task.parentTaskId,
       dependencies: Array.isArray(task.dependencies) ? task.dependencies.map(String) : [],
+      tags: tags,
       details: task.details || '',
       testStrategy: task.testStrategy || task.test_strategy || ''
     };
