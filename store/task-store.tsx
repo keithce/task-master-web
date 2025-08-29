@@ -1,9 +1,9 @@
 "use client";
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { TasksData, Task, TaskFilter } from "@/types/task";
 import { persistenceManager } from "@/lib/persistence";
+import { Task, TaskFilter, TasksData } from "@/types/task";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 interface TaskState {
   // State
@@ -177,7 +177,7 @@ const useTaskStore = create<TaskState>()(
         if (!tasksData) return;
 
         const newTask: Task = {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           title: "New Task",
           description: "",
           status: "todo",

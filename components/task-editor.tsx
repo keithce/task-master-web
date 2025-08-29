@@ -1,23 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useTaskStore } from '@/store/task-store';
-import { Task, TaskStatus, TaskPriority } from '@/types/task';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -25,16 +10,30 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import { X, Plus, Save } from 'lucide-react';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { useTaskStore } from "@/store/task-store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Save, X } from "lucide-react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().min(1, "Title is required"),
   description: z.string(),
-  status: z.enum(['todo', 'in_progress', 'completed', 'blocked', 'cancelled']),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']),
+  status: z.enum(["todo", "in_progress", "completed", "blocked", "cancelled"]),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
   due_date: z.string().optional(),
   assignee: z.string().optional(),
   estimated_hours: z.number().min(0).optional(),
@@ -47,15 +46,19 @@ type TaskFormData = z.infer<typeof taskSchema>;
 
 export const TaskEditor: React.FC = () => {
   const { selectedTask, updateTask, setSelectedTask } = useTaskStore();
-  const [newTag, setNewTag] = React.useState('');
+  const [newTag, setNewTag] = React.useState("");
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      status: 'todo',
-      priority: 'medium',
+      title: "",
+      description: "",
+      status: "todo",
+      priority: "medium",
+      due_date: "",
+      assignee: "",
+      estimated_hours: 0,
+      actual_hours: 0,
       completion_percentage: 0,
       tags: [],
     },
@@ -64,16 +67,16 @@ export const TaskEditor: React.FC = () => {
   React.useEffect(() => {
     if (selectedTask) {
       form.reset({
-        title: selectedTask.title,
-        description: selectedTask.description,
+        title: selectedTask.title || "",
+        description: selectedTask.description || "",
         status: selectedTask.status,
         priority: selectedTask.priority,
-        due_date: selectedTask.due_date || '',
-        assignee: selectedTask.assignee || '',
-        estimated_hours: selectedTask.estimated_hours || 0,
-        actual_hours: selectedTask.actual_hours || 0,
-        completion_percentage: selectedTask.completion_percentage,
-        tags: selectedTask.tags,
+        due_date: selectedTask.due_date || "",
+        assignee: selectedTask.assignee || "",
+        estimated_hours: selectedTask.estimated_hours ?? 0,
+        actual_hours: selectedTask.actual_hours ?? 0,
+        completion_percentage: selectedTask.completion_percentage || 0,
+        tags: selectedTask.tags || [],
       });
     }
   }, [selectedTask, form]);
@@ -86,17 +89,20 @@ export const TaskEditor: React.FC = () => {
 
   const addTag = () => {
     if (newTag.trim() && selectedTask) {
-      const currentTags = form.getValues('tags');
+      const currentTags = form.getValues("tags");
       if (!currentTags.includes(newTag.trim())) {
-        form.setValue('tags', [...currentTags, newTag.trim()]);
-        setNewTag('');
+        form.setValue("tags", [...currentTags, newTag.trim()]);
+        setNewTag("");
       }
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    const currentTags = form.getValues('tags');
-    form.setValue('tags', currentTags.filter(tag => tag !== tagToRemove));
+    const currentTags = form.getValues("tags");
+    form.setValue(
+      "tags",
+      currentTags.filter((tag) => tag !== tagToRemove),
+    );
   };
 
   if (!selectedTask) {
@@ -113,15 +119,11 @@ export const TaskEditor: React.FC = () => {
     <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Edit Task</CardTitle>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelectedTask(null)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setSelectedTask(null)}>
           <X className="h-4 w-4" />
         </Button>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -146,7 +148,7 @@ export const TaskEditor: React.FC = () => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Enter task description..."
                       rows={4}
                       {...field}
@@ -164,7 +166,10 @@ export const TaskEditor: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -189,7 +194,10 @@ export const TaskEditor: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -246,12 +254,19 @@ export const TaskEditor: React.FC = () => {
                   <FormItem>
                     <FormLabel>Estimated Hours</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
+                      <Input
+                        type="number"
+                        min="0"
                         step="0.5"
-                        {...field} 
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value) || 0,
+                          )
+                        }
+                        value={field.value || 0}
                       />
                     </FormControl>
                     <FormMessage />
@@ -266,12 +281,19 @@ export const TaskEditor: React.FC = () => {
                   <FormItem>
                     <FormLabel>Actual Hours</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
+                      <Input
+                        type="number"
+                        min="0"
                         step="0.5"
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value) || 0,
+                          )
+                        }
+                        value={field.value || 0}
                       />
                     </FormControl>
                     <FormMessage />
@@ -304,8 +326,12 @@ export const TaskEditor: React.FC = () => {
             <div className="space-y-2">
               <Label>Tags</Label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {form.watch('tags').map((tag) => (
-                  <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
+                {form.watch("tags").map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="flex items-center space-x-1"
+                  >
                     <span>{tag}</span>
                     <Button
                       type="button"
@@ -325,7 +351,7 @@ export const TaskEditor: React.FC = () => {
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       addTag();
                     }
