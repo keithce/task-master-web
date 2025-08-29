@@ -12,13 +12,25 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, Tag } from 'lucide-react';
 
 export const TaskFilters: React.FC = () => {
-  const { filter, setFilter } = useTaskStore();
+  const { filter, setFilter, getAllTasks } = useTaskStore();
 
   const statusOptions: TaskStatus[] = ['todo', 'in_progress', 'completed', 'blocked', 'cancelled'];
   const priorityOptions: TaskPriority[] = ['low', 'medium', 'high', 'urgent'];
+
+  // Get all unique tags from all tasks
+  const allTasks = getAllTasks();
+  const allTags = React.useMemo(() => {
+    const tagSet = new Set<string>();
+    allTasks.forEach(task => {
+      task.tags.forEach(tag => {
+        if (tag.trim()) tagSet.add(tag);
+      });
+    });
+    return Array.from(tagSet).sort();
+  }, [allTasks]);
 
   const updateFilter = (key: keyof typeof filter, value: any) => {
     const newFilter = { ...filter, [key]: value };
@@ -132,6 +144,46 @@ export const TaskFilters: React.FC = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Tag className="h-4 w-4 mr-2" />
+              Tags
+              {filter.tags && filter.tags.length > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {filter.tags.length}
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {allTags.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                No tags found
+              </div>
+            ) : (
+              allTags.map((tag) => (
+                <DropdownMenuCheckboxItem
+                  key={tag}
+                  checked={filter.tags?.includes(tag) || false}
+                  onCheckedChange={(checked) => {
+                    const currentTags = filter.tags || [];
+                    if (checked) {
+                      const newTags = [...currentTags, tag];
+                      updateFilter('tags', newTags);
+                    } else {
+                      const newTags = currentTags.filter(t => t !== tag);
+                      updateFilter('tags', newTags);
+                    }
+                  }}
+                >
+                  {tag}
+                </DropdownMenuCheckboxItem>
+              ))
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {hasActiveFilters && (
           <Button
             variant="ghost"
@@ -181,6 +233,27 @@ export const TaskFilters: React.FC = () => {
                   clearFilter('priority');
                 } else {
                   updateFilter('priority', newPriority);
+                }
+              }}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </Badge>
+        ))}
+        
+        {filter.tags?.map((tag) => (
+          <Badge key={`tag-${tag}`} variant="default" className="flex items-center space-x-1">
+            <span>Tag: {tag}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-auto p-0 ml-1"
+              onClick={() => {
+                const newTags = filter.tags?.filter(t => t !== tag) || [];
+                if (newTags.length === 0) {
+                  clearFilter('tags');
+                } else {
+                  updateFilter('tags', newTags);
                 }
               }}
             >
