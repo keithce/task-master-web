@@ -66,7 +66,7 @@ export default function TaskMasterApp() {
                   </TabsList>
                   
                   <div className="mt-4 flex-1 min-h-0 overflow-hidden">
-                    <TabsContent value="tasks" className="flex flex-col h-0 min-h-0 flex-1 data-[state=active]:flex">
+                    <TabsContent value="tasks" className="h-full space-y-4 flex flex-col">
                       <div className="flex-shrink-0">
                         <TaskFilters />
                       </div>
