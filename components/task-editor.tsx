@@ -24,7 +24,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { useTaskStore } from "@/store/task-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Save, X } from "lucide-react";
+import { Plus, Save, X, ChevronRight, Trash2 } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -45,7 +45,7 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 export const TaskEditor: React.FC = () => {
-  const { selectedTask, updateTask, setSelectedTask } = useTaskStore();
+  const { selectedTask, updateTask, setSelectedTask, createTask, deleteTask } = useTaskStore();
   const [newTag, setNewTag] = React.useState("");
 
   const form = useForm<TaskFormData>({
@@ -362,6 +362,94 @@ export const TaskEditor: React.FC = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Subtasks Section */}
+            {selectedTask && selectedTask.subtasks.length > 0 && (
+              <div className="space-y-4 pt-6 border-t">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">
+                    Subtasks ({selectedTask.subtasks.length})
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => createTask(selectedTask.id)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Subtask
+                  </Button>
+                </div>
+                
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {selectedTask.subtasks
+                    .sort((a, b) => {
+                      const aNum = parseInt(a.id) || 0;
+                      const bNum = parseInt(b.id) || 0;
+                      return aNum - bNum;
+                    })
+                    .map((subtask) => (
+                    <div
+                      key={subtask.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer group"
+                      onClick={() => setSelectedTask(subtask)}
+                    >
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
+                          #{selectedTask.id}.{subtask.id}
+                        </span>
+                        <span className="font-medium truncate flex-1 min-w-0">
+                          {subtask.title}
+                        </span>
+                        <Badge
+                          variant="secondary"
+                          className={
+                            subtask.status === "completed"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : subtask.status === "in_progress"
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                              : subtask.status === "blocked"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                          }
+                        >
+                          {subtask.status.replace("_", " ")}
+                        </Badge>
+                      </div>
+                      
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteTask(subtask.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Add Subtask Button for tasks without subtasks */}
+            {selectedTask && selectedTask.subtasks.length === 0 && (
+              <div className="pt-6 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-dashed"
+                  onClick={() => createTask(selectedTask.id)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add First Subtask
+                </Button>
+              </div>
+            )}
 
             <Button type="submit" className="w-full">
               <Save className="h-4 w-4 mr-2" />
