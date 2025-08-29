@@ -1,3 +1,5 @@
+'use client';
+
 interface StorageInfo {
   used: number;
   available: number;
