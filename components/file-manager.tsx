@@ -7,6 +7,12 @@ import { TasksData } from '@/types/task';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { 
   Upload, 
   Download, 
   FileText, 
@@ -251,37 +257,69 @@ export const FileManager: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button 
-              onClick={downloadTasksFile} 
-              disabled={!tasksData || tasksData.tasks.length === 0}
-              variant="outline"
-              className="text-sm"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export Tasks
-            </Button>
-            
-            <Button onClick={createSampleData} variant="outline" className="text-sm">
-              <FileText className="h-4 w-4 mr-2" />
-              Sample Data
-            </Button>
-            
-            <Button onClick={handleManualSave} variant="outline" className="text-sm">
-              <Database className="h-4 w-4 mr-2" />
-              Save State
-            </Button>
-            
-            <Button 
-              onClick={handleClearAll} 
-              variant="outline"
-              disabled={isClearing}
-              className="text-sm"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isClearing ? 'Clearing...' : 'Clear All'}
-            </Button>
-          </div>
+          <TooltipProvider>
+            <div className="flex justify-center gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={downloadTasksFile} 
+                    disabled={!tasksData || tasksData.tasks.length === 0}
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="font-medium">Export Tasks</p>
+                  <p className="text-sm text-muted-foreground">Download current tasks as JSON file</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={createSampleData} variant="outline" size="icon">
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="font-medium">Load Sample Data</p>
+                  <p className="text-sm text-muted-foreground">Create example tasks to get started</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleManualSave} variant="outline" size="icon">
+                    <Database className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="font-medium">Save State</p>
+                  <p className="text-sm text-muted-foreground">Manually save current data to browser storage</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={handleClearAll} 
+                    variant="outline"
+                    size="icon"
+                    disabled={isClearing}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="font-medium">Clear All Data</p>
+                  <p className="text-sm text-muted-foreground">
+                    {isClearing ? 'Clearing all tasks and data...' : 'Remove all tasks and reset application'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
 
           {/* Status Messages */}
           {error && (
