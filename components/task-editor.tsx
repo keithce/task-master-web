@@ -34,19 +34,16 @@ const taskSchema = z.object({
   description: z.string(),
   status: z.enum(["todo", "in_progress", "completed", "blocked", "cancelled"]),
   priority: z.enum(["low", "medium", "high", "urgent"]),
-  due_date: z.string().optional(),
-  assignee: z.string().optional(),
-  estimated_hours: z.number().min(0).optional(),
-  actual_hours: z.number().min(0).optional(),
-  completion_percentage: z.number().min(0).max(100),
-  tags: z.array(z.string()),
+  dependencies: z.array(z.string()).optional(),
+  details: z.string().optional(),
+  testStrategy: z.string().optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
 export const TaskEditor: React.FC = () => {
-  const { selectedTask, updateTask, setSelectedTask, createTask, deleteTask, findTaskById } = useTaskStore();
-  const [newTag, setNewTag] = React.useState("");
+  const { selectedTask, updateTask, setSelectedTask, createTask, deleteTask, findTaskById, getAllTasks } = useTaskStore();
+  const [newDependency, setNewDependency] = React.useState("");
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -55,12 +52,9 @@ export const TaskEditor: React.FC = () => {
       description: "",
       status: "todo",
       priority: "medium",
-      due_date: "",
-      assignee: "",
-      estimated_hours: 0,
-      actual_hours: 0,
-      completion_percentage: 0,
-      tags: [],
+      dependencies: [],
+      details: "",
+      testStrategy: "",
     },
   });
 
@@ -71,12 +65,9 @@ export const TaskEditor: React.FC = () => {
         description: selectedTask.description || "",
         status: selectedTask.status,
         priority: selectedTask.priority,
-        due_date: selectedTask.due_date || "",
-        assignee: selectedTask.assignee || "",
-        estimated_hours: selectedTask.estimated_hours ?? 0,
-        actual_hours: selectedTask.actual_hours ?? 0,
-        completion_percentage: selectedTask.completion_percentage || 0,
-        tags: selectedTask.tags || [],
+        dependencies: selectedTask.dependencies || [],
+        details: selectedTask.details || "",
+        testStrategy: selectedTask.testStrategy || "",
       });
     }
   }, [selectedTask, form]);
@@ -87,21 +78,21 @@ export const TaskEditor: React.FC = () => {
     }
   };
 
-  const addTag = () => {
-    if (newTag.trim() && selectedTask) {
-      const currentTags = form.getValues("tags");
-      if (!currentTags.includes(newTag.trim())) {
-        form.setValue("tags", [...currentTags, newTag.trim()]);
-        setNewTag("");
+  const addDependency = () => {
+    if (newDependency.trim() && selectedTask) {
+      const currentDeps = form.getValues("dependencies") || [];
+      if (!currentDeps.includes(newDependency.trim())) {
+        form.setValue("dependencies", [...currentDeps, newDependency.trim()]);
+        setNewDependency("");
       }
     }
   };
 
-  const removeTag = (tagToRemove: string) => {
-    const currentTags = form.getValues("tags");
+  const removeDependency = (depToRemove: string) => {
+    const currentDeps = form.getValues("dependencies") || [];
     form.setValue(
-      "tags",
-      currentTags.filter((tag) => tag !== tagToRemove),
+      "dependencies",
+      currentDeps.filter((dep) => dep !== depToRemove),
     );
   };
 
@@ -124,6 +115,25 @@ export const TaskEditor: React.FC = () => {
     const idPath = buildIdPath(task);
     return idPath.join('.');
   };
+
+  const getDependencyStatus = (depId: string) => {
+    const depTask = findTaskById(depId);
+    if (depTask) {
+      return depTask.status === 'completed' ? '✅' : '⏱️';
+    }
+    return '❓'; // Unknown task
+  };
+
+  // Get all available task IDs for dependency selection
+  const allTasks = getAllTasks();
+  const availableTaskIds = allTasks
+    .filter(task => task.id !== selectedTask?.id) // Exclude self
+    .map(task => task.id)
+    .sort((a, b) => {
+      const aNum = parseInt(a) || 0;
+      const bNum = parseInt(b) || 0;
+      return aNum - bNum;
+    });
 
   if (!selectedTask) {
     return (
@@ -241,106 +251,35 @@ export const TaskEditor: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="assignee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assignee</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter assignee..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="due_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Due Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="estimated_hours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estimated Hours</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.5"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value === ""
-                              ? 0
-                              : parseFloat(e.target.value) || 0,
-                          )
-                        }
-                        value={field.value || 0}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="actual_hours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Actual Hours</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.5"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value === ""
-                              ? 0
-                              : parseFloat(e.target.value) || 0,
-                          )
-                        }
-                        value={field.value || 0}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="details"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Details</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="In-depth implementation instructions..."
+                      rows={4}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
-              name="completion_percentage"
+              name="testStrategy"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Completion Percentage: {field.value}%</FormLabel>
+                  <FormLabel>Test Strategy</FormLabel>
                   <FormControl>
-                    <Slider
-                      min={0}
-                      max={100}
-                      step={5}
-                      value={[field.value]}
-                      onValueChange={(value) => field.onChange(value[0])}
-                      className="w-full"
+                    <Textarea
+                      placeholder="Verification approach..."
+                      rows={3}
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -349,21 +288,22 @@ export const TaskEditor: React.FC = () => {
             />
 
             <div className="space-y-2">
-              <Label>Tags</Label>
+              <Label>Dependencies</Label>
+              <p className="text-xs text-muted-foreground">Task IDs that must be completed before this task</p>
               <div className="flex flex-wrap gap-2 mb-2">
-                {form.watch("tags").map((tag) => (
+                {(form.watch("dependencies") || []).map((dep) => (
                   <Badge
-                    key={tag}
+                    key={dep}
                     variant="secondary"
                     className="flex items-center space-x-1"
                   >
-                    <span>{tag}</span>
+                    <span>{getDependencyStatus(dep)} #{dep}</span>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       className="h-auto p-0 ml-1"
-                      onClick={() => removeTag(tag)}
+                      onClick={() => removeDependency(dep)}
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -371,18 +311,53 @@ export const TaskEditor: React.FC = () => {
                 ))}
               </div>
               <div className="flex space-x-2">
+                <Select
+                  value={newDependency}
+                  onValueChange={setNewDependency}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select task ID..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTaskIds.map((taskId) => (
+                      <SelectItem key={taskId} value={taskId}>
+                        #{taskId}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  type="button" 
+                  onClick={addDependency} 
+                  size="sm"
+                  disabled={!newDependency.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>✅ = Completed dependency</p>
+                <p>⏱️ = Pending dependency</p>
+                <p>❓ = Unknown task ID</p>
+              </div>
+            </div>
+
+            {/* Manual dependency input as fallback */}
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Or add dependency manually:</Label>
+              <div className="flex space-x-2">
                 <Input
-                  placeholder="Add tag..."
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Enter task ID..."
+                  value={newDependency}
+                  onChange={(e) => setNewDependency(e.target.value)}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      addTag();
+                      addDependency();
                     }
                   }}
                 />
-                <Button type="button" onClick={addTag} size="sm">
+                <Button type="button" onClick={addDependency} size="sm">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>

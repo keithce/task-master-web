@@ -162,19 +162,13 @@ export class TaskParser {
       priority: priority as Task['priority'],
       created_at: task.created_at || task.createdAt || new Date().toISOString(),
       updated_at: task.updated_at || task.updatedAt || new Date().toISOString(),
-      tags,
       subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((subtask: any) => 
         this.normalizeTask(subtask, context)
       ) : [],
       parent_id: task.parent_id || task.parentId || task.parentTaskId,
-      assignee: task.assignee,
-      estimated_hours: typeof task.estimated_hours === 'number' ? task.estimated_hours : 
-                      typeof task.estimatedHours === 'number' ? task.estimatedHours : undefined,
-      actual_hours: typeof task.actual_hours === 'number' ? task.actual_hours :
-                   typeof task.actualHours === 'number' ? task.actualHours : undefined,
-      completion_percentage: typeof task.completion_percentage === 'number' ? task.completion_percentage :
-                            typeof task.completionPercentage === 'number' ? task.completionPercentage : 0,
-      due_date: task.due_date || task.dueDate
+      dependencies: Array.isArray(task.dependencies) ? task.dependencies.map(String) : [],
+      details: task.details || '',
+      testStrategy: task.testStrategy || task.test_strategy || ''
     };
 
     return normalizedTask;

@@ -184,10 +184,11 @@ const useTaskStore = create<TaskState>()(
           priority: "medium",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          tags: [],
+          dependencies: [],
           subtasks: [],
           parent_id: parentId,
-          completion_percentage: 0,
+          details: "",
+          testStrategy: "",
         };
 
         if (parentId) {

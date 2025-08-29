@@ -6,14 +6,11 @@ export interface Task {
   priority: TaskPriority;
   created_at: string;
   updated_at: string;
-  due_date?: string;
-  tags: string[];
   subtasks: Task[];
   parent_id?: string;
-  assignee?: string;
-  estimated_hours?: number;
-  actual_hours?: number;
-  completion_percentage: number;
+  dependencies?: string[];
+  details?: string;
+  testStrategy?: string;
 }
 
 export type TaskStatus =
