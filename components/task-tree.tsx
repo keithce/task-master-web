@@ -40,7 +40,8 @@ const TaskNode: React.FC<TaskNodeProps> = ({ task, level, parentId }) => {
   } = useTaskStore();
 
   const isExpanded = expandedTasks.has(task.id);
-  const isSelected = selectedTask?.id === task.id;
+  // Ensure exact match for selection - compare both ID and object reference
+  const isSelected = selectedTask?.id === task.id && selectedTask === task;
   const hasSubtasks = task.subtasks.length > 0;
 
   // Format the ID display
